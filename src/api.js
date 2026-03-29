@@ -4,7 +4,12 @@ const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export async function getBoards() {
   const res = await fetch(`${API_BASE}/boards`);
-  if (!res.ok) throw new Error('Failed to fetch boards');
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '');
+    throw new Error(
+      `GET ${API_BASE}/boards failed (${res.status}${detail ? `: ${detail.slice(0, 120)}` : ''})`,
+    );
+  }
   return res.json();
 }
 

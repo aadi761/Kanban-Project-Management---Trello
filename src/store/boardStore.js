@@ -21,10 +21,11 @@ function normalizeBoard(board) {
   return { ...board, cards };
 }
 
+/** Offline fallback only when `npm run dev` and the API is down — never used in production builds. */
 function createSeedData() {
   const board = {
     id: uuidv4(),
-    title: 'Aadi',
+    title: 'Local dev board',
     lists: [],
     cards: {},
   };
@@ -33,87 +34,21 @@ function createSeedData() {
 
   const c1 = {
     id: uuidv4(),
-    title: 'Trello keyboard',
-    description: 'Learn Trello keyboard shortcuts',
-    labels: [{ id: uuidv4(), text: 'Done', color: 'green' }],
-    dueDate: null,
-    checklist: [],
-    memberIds: [1],
-    archived: false,
-    completed: false,
-    activity: ['Card created'],
-    createdAt: new Date().toISOString(),
-  };
-  const c2 = {
-    id: uuidv4(),
-    title: 'yupp',
-    description: '',
-    labels: [],
+    title: 'Example card',
+    description: 'Start the API or use Neon + Render so this seed is not needed.',
+    labels: [{ id: uuidv4(), text: 'Demo', color: 'blue' }],
     dueDate: null,
     checklist: [],
     memberIds: [],
     archived: false,
     completed: false,
-    activity: ['Card created'],
-    createdAt: new Date().toISOString(),
-  };
-  const c3 = {
-    id: uuidv4(),
-    title: 'yupp',
-    description: '',
-    labels: [],
-    dueDate: null,
-    checklist: [],
-    memberIds: [],
-    archived: false,
-    completed: false,
-    activity: ['Card created'],
-    createdAt: new Date().toISOString(),
-  };
-  const c4 = {
-    id: uuidv4(),
-    title: 'Design mockups',
-    description: 'Create high-fidelity designs for the landing page',
-    labels: [
-      { id: uuidv4(), text: 'Design', color: 'purple' },
-      { id: uuidv4(), text: 'Urgent', color: 'red' },
-    ],
-    dueDate: '2026-04-05',
-    checklist: [
-      { id: uuidv4(), text: 'Homepage mockup', completed: true },
-      { id: uuidv4(), text: 'About page mockup', completed: false },
-    ],
-    memberIds: [1, 2],
-    archived: false,
-    completed: false,
-    activity: ['Card created'],
-    createdAt: new Date().toISOString(),
-  };
-  const c5 = {
-    id: uuidv4(),
-    title: 'Set up CI/CD pipeline',
-    description: 'Configure GitHub Actions for automated deployment',
-    labels: [{ id: uuidv4(), text: 'DevOps', color: 'blue' }],
-    dueDate: '2026-04-10',
-    checklist: [],
-    memberIds: [2],
-    archived: false,
-    completed: false,
-    activity: ['Card created'],
+    activity: [],
     createdAt: new Date().toISOString(),
   };
 
   cards[c1.id] = c1;
-  cards[c2.id] = c2;
-  cards[c3.id] = c3;
-  cards[c4.id] = c4;
-  cards[c5.id] = c5;
 
-  board.lists = [
-    { id: uuidv4(), title: 'This Week', cardIds: [c3.id] },
-    { id: uuidv4(), title: 'Today', cardIds: [c1.id, c2.id, c4.id] },
-    { id: uuidv4(), title: 'Later', cardIds: [c5.id] },
-  ];
+  board.lists = [{ id: uuidv4(), title: 'To do', cardIds: [c1.id] }];
   board.cards = cards;
 
   return [normalizeBoard(board)];
@@ -123,22 +58,35 @@ export function useBoardStore() {
   const [boards, setBoards] = useState([]);
   const [activeBoardId, setActiveBoardId] = useState('');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
 
   const loadBoards = useCallback(async (preserveActive = false) => {
     try {
+      setLoadError(null);
       const data = await api.getBoards();
       if (data && data.length > 0) {
         setBoards(data.map(normalizeBoard));
         if (!preserveActive) setActiveBoardId(data[0].id);
       } else {
         setBoards([]);
+        if (!preserveActive) setActiveBoardId('');
       }
     } catch (err) {
-      console.error('API not available, using local seed fallback:', err);
-      if (!preserveActive) {
-        const seed = createSeedData();
-        setBoards(seed);
-        setActiveBoardId(seed[0].id);
+      console.error('Failed to load boards:', err);
+      const message =
+        err instanceof Error ? err.message : 'Network or server error when calling the API.';
+      if (import.meta.env.DEV) {
+        console.info('DEV: API unreachable — showing local seed data.');
+        if (!preserveActive) {
+          const seed = createSeedData();
+          setBoards(seed);
+          setActiveBoardId(seed[0].id);
+          setLoadError(null);
+        }
+      } else {
+        setLoadError(message);
+        setBoards([]);
+        if (!preserveActive) setActiveBoardId('');
       }
     } finally {
       if (!preserveActive) setLoading(false);
@@ -146,6 +94,11 @@ export function useBoardStore() {
   }, []);
 
   useEffect(() => {
+    loadBoards();
+  }, [loadBoards]);
+
+  const retryLoad = useCallback(() => {
+    setLoading(true);
     loadBoards();
   }, [loadBoards]);
 
@@ -559,6 +512,8 @@ export function useBoardStore() {
     setActiveBoardId,
     switchBoard,
     loading,
+    loadError,
+    retryLoad,
     createBoard,
     updateBoardTitle,
     toggleBoardStar,

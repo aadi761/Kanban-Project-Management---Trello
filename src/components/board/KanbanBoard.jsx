@@ -49,9 +49,35 @@ export default function KanbanBoard() {
 
   const hasFilters = searchQuery || filterLabels.length > 0 || filterMembers.length > 0 || filterDue;
 
+  if (store.loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-muted-foreground">
+        Loading boards…
+      </div>
+    );
+  }
+
+  if (store.loadError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-6 text-center max-w-lg mx-auto">
+        <p className="font-medium text-destructive">Could not load boards from the server</p>
+        <p className="text-sm text-muted-foreground">{store.loadError}</p>
+        <p className="text-xs text-muted-foreground">
+          If the deployed site uses HTTPS, <code className="rounded bg-muted px-1 py-0.5">VITE_API_URL</code> must
+          also be <strong>https</strong> (your Render API URL). Match{' '}
+          <code className="rounded bg-muted px-1 py-0.5">FRONTEND_URL</code> on Render to this site’s origin for CORS.
+        </p>
+        <Button type="button" onClick={() => store.retryLoad()}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
   if (!activeBoard) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex flex-col items-center justify-center min-h-screen gap-3">
+        <p className="text-muted-foreground text-sm">No boards yet. Create one or run backend/seed_demo.sql on Neon.</p>
         <Button onClick={() => store.createBoard('My Board')}>Create your first board</Button>
       </div>
     );
