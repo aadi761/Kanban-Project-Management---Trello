@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { DragDropContext, Droppable } from '@hello-pangea/dnd';
 import { Plus, X } from 'lucide-react';
+import { API_BASE } from '@/api.js';
 import { useBoardStore } from '@/store/boardStore.js';
 import BoardList from './BoardList.jsx';
 import BoardHeader from './BoardHeader.jsx';
@@ -58,15 +59,51 @@ export default function KanbanBoard() {
   }
 
   if (store.loadError) {
+    const usesLocalhost =
+      API_BASE.includes('localhost') || API_BASE.includes('127.0.0.1');
+    const isInsecureOnHttps =
+      typeof window !== 'undefined' &&
+      window.location.protocol === 'https:' &&
+      API_BASE.startsWith('http:');
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-6 text-center max-w-lg mx-auto">
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-6 text-center max-w-xl mx-auto">
         <p className="font-medium text-destructive">Could not load boards from the server</p>
         <p className="text-sm text-muted-foreground">{store.loadError}</p>
-        <p className="text-xs text-muted-foreground">
-          If the deployed site uses HTTPS, <code className="rounded bg-muted px-1 py-0.5">VITE_API_URL</code> must
-          also be <strong>https</strong> (your Render API URL). Match{' '}
-          <code className="rounded bg-muted px-1 py-0.5">FRONTEND_URL</code> on Render to this site’s origin for CORS.
-        </p>
+        <div className="rounded-md border border-border bg-muted/40 px-3 py-2 text-left text-xs space-y-2 w-full max-w-md">
+          <p>
+            <span className="font-medium text-foreground">API base in this build:</span>{' '}
+            <code className="break-all">{API_BASE}</code>
+          </p>
+          {usesLocalhost ? (
+            <p className="text-amber-600 dark:text-amber-400">
+              This build is still pointing at <strong>localhost</strong>. In Vercel → Project → Settings → Environment
+              Variables, set <code className="rounded bg-background px-1">VITE_API_URL</code> to your Render URL (e.g.{' '}
+              <code className="break-all">https://your-api.onrender.com/api</code>), then trigger a new deployment (vars
+              are baked in at build time).
+            </p>
+          ) : null}
+          {isInsecureOnHttps ? (
+            <p className="text-amber-600 dark:text-amber-400">
+              This page is HTTPS but <code className="rounded bg-background px-1">VITE_API_URL</code> uses{' '}
+              <strong>http</strong>. The browser blocks that (mixed content). Use an{' '}
+              <strong>https://</strong> API URL and redeploy.
+            </p>
+          ) : null}
+          <p>
+            On Render, set <code className="rounded bg-background px-1">FRONTEND_URL</code> to this site’s exact origin
+            (e.g. <code className="break-all">{typeof window !== 'undefined' ? window.location.origin : 'https://…vercel.app'}</code>
+            ). Multiple URLs: comma-separated. Open{' '}
+            <a
+              className="text-primary underline"
+              href={`${API_BASE.replace(/\/api\/?$/, '')}/api/health`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              API health
+            </a>{' '}
+            in a new tab — if it loads, the API is up and the problem is likely CORS or the wrong base path.
+          </p>
+        </div>
         <Button type="button" onClick={() => store.retryLoad()}>
           Retry
         </Button>

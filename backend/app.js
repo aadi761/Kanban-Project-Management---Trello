@@ -7,8 +7,31 @@ const cardRoutes = require('./routes/cardRoutes');
 
 const app = express();
 
-const corsOrigin = process.env.FRONTEND_URL || true;
-app.use(cors({ origin: corsOrigin, credentials: true }));
+/** Comma-separated origins, e.g. https://app.vercel.app,https://preview.vercel.app — optional trailing slashes stripped */
+function buildCorsOrigin() {
+  const raw = process.env.FRONTEND_URL || '';
+  const list = raw
+    .split(',')
+    .map((s) => s.trim().replace(/\/$/, ''))
+    .filter(Boolean);
+  if (list.length === 0) {
+    return true;
+  }
+  return (origin, callback) => {
+    if (!origin) {
+      callback(null, true);
+      return;
+    }
+    const normalized = origin.replace(/\/$/, '');
+    if (list.includes(normalized)) {
+      callback(null, true);
+      return;
+    }
+    callback(null, false);
+  };
+}
+
+app.use(cors({ origin: buildCorsOrigin(), credentials: true }));
 app.use(express.json());
 
 app.use('/api/boards', boardRoutes);
