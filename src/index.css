@@ -1,0 +1,169 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 270 50% 96%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 221 83% 53%;
+
+    --radius: 0.5rem;
+
+    --board-bg: linear-gradient(135deg, hsl(250 40% 35%), hsl(280 45% 45%), hsl(300 35% 40%));
+    --list-bg: 210 16% 93%;
+    --list-header: 222 47% 11%;
+    --card-hover: 220 14% 92%;
+    --label-green: 142 71% 45%;
+    --label-yellow: 48 96% 53%;
+    --label-orange: 25 95% 53%;
+    --label-red: 0 84% 60%;
+    --label-purple: 270 60% 55%;
+    --label-blue: 221 83% 53%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 221 83% 53%;
+  }
+
+  .dark {
+    --background: 225 25% 14%;
+    --foreground: 210 20% 92%;
+
+    --card: 225 20% 18%;
+    --card-foreground: 210 20% 92%;
+
+    --popover: 225 22% 16%;
+    --popover-foreground: 210 20% 92%;
+
+    --primary: 220 80% 56%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 225 18% 24%;
+    --secondary-foreground: 210 20% 88%;
+
+    --muted: 225 15% 22%;
+    --muted-foreground: 215 15% 55%;
+
+    --accent: 270 60% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 225 15% 26%;
+    --input: 225 15% 26%;
+    --ring: 220 80% 56%;
+
+    --board-bg: linear-gradient(135deg, hsl(250 40% 35%), hsl(280 45% 45%), hsl(300 35% 40%));
+    --list-bg: 225 18% 12%;
+    --list-header: 210 20% 92%;
+    --card-hover: 225 18% 22%;
+    --label-green: 142 71% 45%;
+    --label-yellow: 48 96% 53%;
+    --label-orange: 25 95% 53%;
+    --label-red: 0 84% 60%;
+    --label-purple: 270 60% 60%;
+    --label-blue: 220 80% 56%;
+
+    --sidebar-background: 225 25% 10%;
+    --sidebar-foreground: 210 20% 88%;
+    --sidebar-primary: 220 80% 56%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 225 18% 16%;
+    --sidebar-accent-foreground: 210 20% 88%;
+    --sidebar-border: 225 15% 20%;
+    --sidebar-ring: 220 80% 56%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer utilities {
+  .board-gradient {
+    background: var(--board-bg);
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted)) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted));
+    border-radius: 3px;
+  }
+
+  .card-completed-glow {
+    box-shadow:
+      0 0 0 1px hsl(142 71% 45% / 0.28),
+      0 0 18px hsl(142 71% 45% / 0.18);
+  }
+
+  .dark .card-completed-glow {
+    box-shadow:
+      0 0 0 1px hsl(142 71% 45% / 0.35),
+      0 0 22px hsl(142 71% 45% / 0.22);
+  }
+
+  @keyframes spark {
+    0% {
+      box-shadow: 0 0 0 0 rgba(31, 132, 90, 0.7);
+    }
+    100% {
+      box-shadow: 0 0 0 10px rgba(31, 132, 90, 0);
+    }
+  }
+
+  .animate-spark {
+    animation: spark 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+}
